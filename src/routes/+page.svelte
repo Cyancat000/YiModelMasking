@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
-  import { open } from "@tauri-apps/plugin-dialog";
+  import { open, message } from "@tauri-apps/plugin-dialog";
 
   interface FileItem {
     path: string;
@@ -13,6 +13,7 @@
 
   let files: FileItem[] = [];
   let processing = false;
+  let overwriteOriginal = false;
   let unlisten: () => void;
 
   // Presets
@@ -194,13 +195,13 @@
 
     // Prepare arguments
     // -m: Ignore minor errors
-    // -overwrite_original: Overwrite original file
+    // -overwrite_original: Overwrite original file (if enabled)
     // -Make="OLYMPUS CORPORATION"
     // -Model="PEN-F"
     // -ImageDescription="yi2olympus"
     const args = [
       "-m",
-      "-overwrite_original",
+      ...(overwriteOriginal ? ["-overwrite_original"] : []),
       `-Make=${selectedPreset.make}`,
       `-Model=${selectedPreset.model}`,
       // Optionally set ImageDescription to mark processed files
@@ -227,9 +228,14 @@
       );
     } catch (error) {
       console.error("ExifTool error:", error);
+      const errorMsg = String(error);
+      
+      // Show error dialog
+      await message(errorMsg, { title: 'Conversion Failed', kind: 'error' });
+
       files = files.map((f) =>
         f.status === "processing"
-          ? { ...f, status: "error", message: String(error) }
+          ? { ...f, status: "error", message: errorMsg }
           : f,
       );
     } finally {
@@ -267,7 +273,7 @@
       Target Camera Model
     </label>
 
-    <div class="relative">
+    <div class="relative mb-4">
       <select
         id="preset-select"
         bind:value={selectedPreset}
@@ -298,6 +304,15 @@
         </svg>
       </div>
     </div>
+
+    <label class="flex items-center gap-2 text-sm text-[#1b1b1b] cursor-pointer select-none">
+        <input 
+            type="checkbox" 
+            bind:checked={overwriteOriginal}
+            class="w-4 h-4 text-[#0067c0] border-gray-300 rounded focus:ring-[#0067c0]"
+        />
+        <span>Overwrite original files</span>
+    </label>
   </div>
 
   <div
