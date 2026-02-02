@@ -7,7 +7,7 @@
   interface FileItem {
     path: string;
     name: string;
-    status: "pending" | "processing" | "success" | "error";
+    status: "载入中" | "处理中" | "转换成功" | "转换错误";
     message?: string;
   }
 
@@ -142,7 +142,7 @@
     const newFiles = dngFiles.map((path) => ({
       path,
       name: path.split(/[\\/]/).pop() || path,
-      status: "pending" as const,
+      status: "载入中" as const,
     }));
 
     // Avoid duplicates
@@ -184,7 +184,7 @@
     if (files.length === 0) return;
     processing = true;
 
-    const pendingFiles = files.filter((f) => f.status !== "success");
+    const pendingFiles = files.filter((f) => f.status !== "转换成功");
     const filePaths = pendingFiles.map((f) => f.path);
 
     if (filePaths.length === 0) {
@@ -215,7 +215,7 @@
       // Update UI to processing
       files = files.map((f) =>
         pendingFiles.some((pf) => pf.path === f.path)
-          ? { ...f, status: "processing" }
+          ? { ...f, status: "处理中" }
           : f,
       );
 
@@ -224,18 +224,18 @@
 
       // Assume success if no error thrown
       files = files.map((f) =>
-        f.status === "processing" ? { ...f, status: "success" } : f,
+        f.status === "处理中" ? { ...f, status: "转换成功" } : f,
       );
     } catch (error) {
       console.error("ExifTool error:", error);
       const errorMsg = String(error);
       
       // Show error dialog
-      await message(errorMsg, { title: 'Conversion Failed', kind: 'error' });
+      await message(errorMsg+"如果不是管理员模式运行, 请使用管理员模式启动后重试。", { title: 'Conversion Failed', kind: 'error' });
 
       files = files.map((f) =>
-        f.status === "processing"
-          ? { ...f, status: "error", message: errorMsg }
+        f.status === "处理中"
+          ? { ...f, status: "转换错误", message: errorMsg }
           : f,
       );
     } finally {
@@ -258,19 +258,13 @@
   class="h-screen w-screen bg-[#fff] text-[#1b1b1b] font-sans flex flex-col p-8 select-none"
   on:contextmenu|preventDefault
 >
-  <div class="mb-8">
-    <h1 class="text-2xl font-semibold text-[#1b1b1b]">DNG Masker</h1>
-    <p class="text-[#616161] mt-1 text-sm">
-      Drag and drop DNG files to disguise them as Olympus cameras.
-    </p>
-  </div>
 
   <div class="mb-6 bg-white border border-[#e5e5e5] p-5 rounded-lg shadow-sm">
     <label
       for="preset-select"
       class="block text-sm font-semibold text-[#1b1b1b] mb-3"
     >
-      Target Camera Model
+      目标相机型号
     </label>
 
     <div class="relative mb-4">
@@ -311,7 +305,7 @@
             bind:checked={overwriteOriginal}
             class="w-4 h-4 text-[#0067c0] border-gray-300 rounded focus:ring-[#0067c0]"
         />
-        <span>Overwrite original files</span>
+        <span>覆盖原文件</span>
     </label>
   </div>
 
@@ -349,8 +343,8 @@
         </svg>
         <p class="text-sm font-medium">
           {isDraggingOver
-            ? "Drop to add files"
-            : "Drag & Drop DNG files here or Click to Select"}
+            ? "松开以添加文件"
+            : "拖放DNG文件或者点击选择以开始"}
         </p>
       </div>
     {:else}
@@ -374,20 +368,20 @@
             </div>
 
             <div class="flex items-center gap-3">
-              {#if file.status === "success"}
+              {#if file.status === "转换成功"}
                 <span
                   class="text-[#0f7b0f] text-xs font-medium px-2 py-0.5 bg-[#dff6dd] rounded-full"
-                  >Done</span
+                  >转换完成</span
                 >
-              {:else if file.status === "error"}
+              {:else if file.status === "转换错误"}
                 <span
                   class="text-[#c42b1c] text-xs font-medium px-2 py-0.5 bg-[#fde7e9] rounded-full"
-                  >Error</span
+                  >转换错误</span
                 >
-              {:else if file.status === "processing"}
+              {:else if file.status === "处理中"}
                 <span
                   class="text-[#0067c0] text-xs font-medium px-2 py-0.5 bg-[#cfe4fa] rounded-full animate-pulse"
-                  >Processing</span
+                  >转换中</span
                 >
               {:else}
                 <button
@@ -419,14 +413,14 @@
   <div class="mt-6 flex justify-end items-center gap-3">
     {#if files.length > 0}
       <div class="text-xs text-[#616161] mr-2">
-        {files.length} items selected
+        已选择 {files.length} 个文件
       </div>
       <button
         class="px-4 py-2 text-sm text-[#1b1b1b] bg-[#ffffff] border border-[#d1d1d1] hover:bg-[#f5f5f5] active:bg-[#eeeeee] rounded-md transition-all disabled:opacity-50"
         disabled={processing}
         on:click={clearFiles}
       >
-        Clear All
+        全部清除
       </button>
     {/if}
 
@@ -439,9 +433,9 @@
         <div
           class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
         ></div>
-        Processing...
+        转换中...
       {:else}
-        Convert to {selectedPreset.model}
+        转换为 {selectedPreset.model}
       {/if}
     </button>
   </div>
