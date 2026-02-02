@@ -16,20 +16,63 @@
   let unlisten: () => void;
 
   // Presets
-  const presets = [
-    {
-      id: 'pen-f',
-      name: 'Olympus PEN-F',
-      make: 'OLYMPUS CORPORATION',
-      model: 'PEN-F',
-    },
-    {
-      id: 'e-m1',
-      name: 'Olympus E-M1',
-      make: 'OLYMPUS CORPORATION',
-      model: 'E-M1',
-    }
-  ];
+const presets = [
+  {
+    id: 'pen-f',
+    name: 'Olympus PEN-F',
+    make: 'OLYMPUS CORPORATION',
+    model: 'PEN-F',
+  },
+  {
+    id: 'e-m1',
+    name: 'Olympus E-M1',
+    make: 'OLYMPUS CORPORATION',
+    model: 'E-M1',
+  },
+  {
+    id: 'yi-m1',
+    name: 'YI M1',
+    make: 'YI Technology',
+    model: 'YI M1',
+  },
+  {
+    id: 'gx8',
+    name: 'Panasonic Lumix GX8',
+    make: 'Panasonic',
+    model: 'DMC-GX8',
+  },
+  {
+    id: 'g9',
+    name: 'Panasonic Lumix G9',
+    make: 'Panasonic',
+    model: 'DC-G9',
+  },
+  {
+    id: 'g100',
+    name: 'Panasonic Lumix G100',
+    make: 'Panasonic',
+    model: 'DC-G100',
+  },
+  {
+    id: 'e-m5-iii',
+    name: 'Olympus E-M5 Mark III',
+    make: 'OLYMPUS CORPORATION',
+    model: 'E-M5MarkIII',
+  },
+  {
+    id: 'e-m10-iv',
+    name: 'Olympus E-M10 Mark IV',
+    make: 'OLYMPUS CORPORATION',
+    model: 'E-M10MarkIV',
+  },
+  {
+    id: 'e-p7',
+    name: 'Olympus PEN E-P7',
+    make: 'OLYMPUS CORPORATION',
+    model: 'E-P7',
+  }
+];
+
   let selectedPreset = presets[0];
 
   let isDraggingOver = false;
