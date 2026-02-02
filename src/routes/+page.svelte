@@ -32,34 +32,57 @@
   ];
   let selectedPreset = presets[0];
 
+  let isDraggingOver = false;
+
   onMount(async () => {
     console.log('Mounting component, setting up listeners...');
     
-    // Listen for file drop
-    unlisten = await listen('tauri://file-drop', (event) => {
-      console.log('File drop event received:', event);
+    // Listen for file drop (Tauri v2)
+    const unlistenDragDrop = await listen('tauri://drag-drop', (event) => {
+      console.log('Tauri drag-drop event:', event);
+      isDraggingOver = false;
+      
+      // Handle v2 payload structure: { paths: string[], position: { x, y } }
+      // or fallback to v1 string[] if structure differs
+      const payload = event.payload as any;
+      const paths = payload.paths || (Array.isArray(payload) ? payload : []);
+      
+      if (Array.isArray(paths) && paths.length > 0) {
+          addFiles(paths);
+      } else {
+          console.warn('Invalid drag-drop payload:', payload);
+      }
+    });
+
+    // Listen for drag enter
+    const unlistenDragEnter = await listen('tauri://drag-enter', () => {
+        console.log('Tauri drag-enter');
+        isDraggingOver = true;
+    });
+
+    // Listen for drag leave
+    const unlistenDragLeave = await listen('tauri://drag-leave', () => {
+        console.log('Tauri drag-leave');
+        isDraggingOver = false;
+    });
+    
+    // Keep legacy listener just in case
+    const unlistenFileDrop = await listen('tauri://file-drop', (event) => {
+      console.log('Legacy file-drop event:', event);
       const paths = event.payload as string[];
       addFiles(paths);
     });
     
-    // Listen for file drop hover (optional, for UI feedback)
-    const unlistenHover = await listen('tauri://file-drop-hover', (event) => {
-        console.log('File hover event:', event);
-    });
-    
-    // Listen for file drop cancelled
-    const unlistenCancelled = await listen('tauri://file-drop-cancelled', (event) => {
-        console.log('File drop cancelled:', event);
-    });
-    
     return () => {
-        if(unlistenHover) unlistenHover();
-        if(unlistenCancelled) unlistenCancelled();
+        unlistenDragDrop();
+        unlistenDragEnter();
+        unlistenDragLeave();
+        unlistenFileDrop();
     }
   });
 
   onDestroy(() => {
-    if (unlisten) unlisten();
+    if (unlisten) unlisten(); // Clean up the initial unlisten if set
   });
 
   function addFiles(paths: string[]) {
@@ -194,16 +217,20 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div 
-    class="flex-1 bg-gray-800/30 rounded-2xl border-2 border-dashed border-gray-700 flex flex-col overflow-hidden relative transition-colors hover:border-gray-500 cursor-pointer"
+    class="flex-1 bg-gray-800/30 rounded-2xl border-2 border-dashed flex flex-col overflow-hidden relative transition-colors cursor-pointer {isDraggingOver ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 hover:border-gray-500'}"
     on:click={openFileDialog}
-    on:dragover|preventDefault={(e) => console.log('HTML5 DragOver:', e)}
+    on:dragover|preventDefault={(e) => {
+        // Prevent default to allow drop
+        e.dataTransfer!.dropEffect = 'copy';
+        console.log('HTML5 DragOver');
+    }}
     on:drop|preventDefault={(e) => console.log('HTML5 Drop:', e)}
   >
       
       {#if files.length === 0}
           <div class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 pointer-events-none">
-              <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              <p class="text-lg">Drag & Drop DNG files here or Click to Select</p>
+              <svg class="w-16 h-16 mb-4 opacity-50 {isDraggingOver ? 'text-blue-500 animate-bounce' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <p class="text-lg">{isDraggingOver ? 'Drop files now!' : 'Drag & Drop DNG files here or Click to Select'}</p>
           </div>
       {:else}
           <div class="flex-1 overflow-y-auto p-4 space-y-2" on:click|stopPropagation>
