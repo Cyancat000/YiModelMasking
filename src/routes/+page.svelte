@@ -255,11 +255,11 @@
 </script>
 
 <main
-  class="h-screen w-screen bg-[#fff] text-[#1b1b1b] font-sans flex flex-col p-8 select-none"
+  class="h-screen w-screen bg-[#f0f0f0] text-[#1b1b1b] font-sans flex flex-col p-8 select-none"
   on:contextmenu|preventDefault
 >
 
-  <div class="mb-6 bg-white border border-[#e5e5e5] p-5 rounded-lg shadow-sm">
+  <div class="mb-6 bg-white p-5 rounded-lg">
     <label
       for="preset-select"
       class="block text-sm font-semibold text-[#1b1b1b] mb-3"
@@ -310,7 +310,7 @@
   </div>
 
   <div
-    class="flex-1 bg-white/40 rounded-lg border border-[#e5e5e5] flex flex-col overflow-hidden relative transition-all shadow-[0_2px_4px_rgba(0,0,0,0.04)]
+    class="flex-1 bg-white/40 rounded-lg border border-[#e5e5e5] flex flex-col overflow-hidden relative transition-all
     {isDraggingOver
       ? 'bg-[#cfe4fa]/50 border-[#0067c0] ring-1 ring-[#0067c0]'
       : ''}"
@@ -354,7 +354,7 @@
       >
         {#each files as file (file.path)}
           <div
-            class="flex items-center justify-between bg-white p-3 rounded border border-[#efefef] hover:border-[#d1d1d1] transition-colors shadow-sm"
+            class="flex items-center justify-between bg-white p-3 rounded border border-[#efefef] hover:border-[#d1d1d1] transition-colors"
           >
             <div class="flex items-center gap-3 overflow-hidden">
               <div
@@ -416,7 +416,7 @@
         已选择 {files.length} 个文件
       </div>
       <button
-        class="px-4 py-2 text-sm text-[#1b1b1b] bg-[#ffffff] border border-[#d1d1d1] hover:bg-[#f5f5f5] active:bg-[#eeeeee] rounded-md transition-all disabled:opacity-50"
+        class="px-4 py-2 text-sm text-[#1b1b1b] bg-[#ffffff] hover:bg-[#f5f5f5] active:bg-[#eeeeee] rounded-md transition-all disabled:opacity-50"
         disabled={processing}
         on:click={clearFiles}
       >
@@ -425,7 +425,7 @@
     {/if}
 
     <button
-      class="px-8 py-2 bg-[#0067c0] hover:bg-[#005fb8] active:bg-[#0052a1] text-white text-sm font-medium rounded-md shadow-[0_2px_4px_rgba(0,0,0,0.1)] active:shadow-none disabled:bg-[#cccccc] disabled:shadow-none transition-all flex items-center gap-2"
+      class="px-8 py-2 bg-[#007aff] hover:bg-[#005fb8] active:bg-[#0052a1] text-white text-sm font-medium rounded-md active:shadow-none disabled:bg-[#cccccc] disabled:shadow-none transition-all flex items-center gap-2"
       disabled={files.length === 0 || processing}
       on:click={processFiles}
     >
@@ -444,7 +444,7 @@
 <style>
   /* 隐藏 Webkit 滚动条以保持原生应用感 */
   ::-webkit-scrollbar {
-    width: 6px;
+    width: 0px;
   }
   ::-webkit-scrollbar-thumb {
     background: #cdcdcd;
@@ -452,5 +452,13 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     background: #a6a6a6;
+  }
+
+  
+
+  *{
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    transition: cubic-bezier(0.075, 0.82, 0.165, 1);
   }
 </style>
