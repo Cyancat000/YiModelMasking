@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "yi2olympus",
+  "productName": "YiModelMasking",
   "version": "0.1.0",
-  "identifier": "com.cyancat.yi2olympus",
+  "identifier": "com.cyancat.yimodelmasking",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "yi2olympus",
+        "title": "小蚁机型伪装",
         "width": 800,
         "height": 600,
         "minWidth": 640, 
